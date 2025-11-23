@@ -1,0 +1,22 @@
+{
+  "name": "repository_pattern",
+  "version": "1.0.0",
+  "description": "Sunday project",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "format": "prettier --write \"**/*.ts\"",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:server": "npx tsx watch server/index.ts"
+  },
+  "author": "https://github.com/FeelHippo",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.6"
+  },
+  "dependencies": {
+    "postgres": "^3.4.7",
+    "prettier": "^3.6.2"
+  }
+}
