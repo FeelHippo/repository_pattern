@@ -1,68 +1,66 @@
 import postgres from "postgres";
-import { UserData } from "@/domain/user";
+import { UserModel } from "@/domain/user";
 
 export interface UserRepositoryAbstraction {
-  findById(id: number): Promise<UserData | null>;
-  findAll(): Promise<UserData[]>;
-  create(user: UserData): Promise<UserData>;
-  update(id: number, user: UserData): Promise<UserData | null>;
+  readAll(): Promise<UserModel[]>;
+  readById(id: number): Promise<UserModel | null>;
+  create(user: UserModel): Promise<UserModel>;
+  update(id: number, user: UserModel): Promise<UserModel | null>;
   delete(id: number): Promise<void>;
 }
 
-export class UserRepository implements UserRepositoryAbstraction {
-  constructor(services: Record<string, postgres.Sql>) {
-    this.db = services["sql"];
+export default class UserRepository implements UserRepositoryAbstraction {
+  constructor(sql: postgres.Sql) {
+    this.db = sql;
   }
 
   private readonly db: postgres.Sql;
 
-  async findById(id: number): Promise<UserData | null> {
-    const users = await this.db`
-    select
-      name,
-      isDeleted
-    from repository_test
-    where id = ${id}
-  `;
-    return new UserData(id, users[0].name, users[0].isDeleted);
-  }
-
-  async findAll(): Promise<UserData[]> {
+  async readAll(): Promise<UserModel[]> {
     const users = await this.db`
     select
       *
-    from repository_test
+    from users
   `;
-    const usersData: UserData[] = [];
+    const usersData: UserModel[] = [];
     for (const user of users) {
-      usersData.push(new UserData(user.id, user.name, user.isDeleted));
+      usersData.push(new UserModel(user.name, user.isDeleted, user.id));
     }
     return usersData;
   }
 
-  async create(user: UserData): Promise<UserData> {
+  async readById(id: number): Promise<UserModel | null> {
     const users = await this.db`
-    insert into users
-      (id, name, isDeleted)
-    values
-      (${user.id}, ${user.name}, ${user.isDeleted})
-    returning name, age
+    select ${ this.db('name', 'isDeleted') }
+    from users
+    where id = ${id}
   `;
-    return new UserData(users[0].id, users[0].name, users[0].isDeleted);
+    if (!users.length) return null;
+      const { name, is_deleted: isDeleted } = users[0];
+      return new UserModel(name, isDeleted, id);
   }
 
-  async update(id: number, user: UserData): Promise<UserData | null> {
+  async create(user: UserModel): Promise<UserModel> {
     const users = await this.db`
-    update repository_test
+    insert into users ${ this.db([{ name: user.name, isDeleted: user.isDeleted }]) }
+    returning *
+  `;
+    const { name, is_deleted: isDeleted, id } = users[0];
+    return new UserModel(name, isDeleted, id);
+  }
+
+  async update(id: number, user: UserModel): Promise<UserModel | null> {
+    const users = await this.db`
+    update users
     set name = ${user.name}, isDeleted = ${user.isDeleted}
     where id = ${id}
   `;
-    return new UserData(id, users[0].name, users[0].isDeleted);
+    return new UserModel(users[0].name, users[0].isDeleted, id);
   }
 
   async delete(id: number): Promise<void> {
     await this.db`
-    delete repository_test
+    delete from users
     where id = ${id}
   `;
   }

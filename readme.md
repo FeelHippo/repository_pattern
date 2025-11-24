@@ -2,6 +2,7 @@
 
 - See my investigation [here](https://github.com/FeelHippo/personal_knowledge_base/blob/main/interviewQuestions.md#active-record)
 - See my implementation of Inversion of Control [here](https://github.com/FeelHippo/conversational_commerce/tree/main/inversion_of_control)
+- [Goal](https://miro.medium.com/v2/resize:fit:720/format:webp/0*B5a9lPhBRsnQ8Tzp.png)
 
 In this little project, I explore and implement a basic [repository pattern](https://martinfowler.com/eaaCatalog/repository.html. 
 

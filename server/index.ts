@@ -1,5 +1,7 @@
 import * as http from "http";
 import injector from "./dependencies/injector";
+import getController from "@/controllers/get_controller";
+import postController from "@/controllers/post_controller";
 
 // inject dependencies
 const dependencies = injector();
@@ -8,6 +10,9 @@ const dependencies = injector();
 http
   .createServer(async (request, response) => {
     switch (request.method) {
+      case "GET":
+        await getHandler(request, response);
+        break;
       case "POST":
         await postHandler(request, response);
         break;
@@ -18,40 +23,29 @@ http
   })
   .listen(8080, () => console.info("Server running on port 8080"));
 
+async function getHandler(
+  request: http.IncomingMessage,
+  response: http.ServerResponse,
+) {
+  await new getController(
+    response,
+    dependencies.userDomain,
+    new URL(`localhost:${request.url}`),
+  ).processRequest();
+}
+
 async function postHandler(
   request: http.IncomingMessage,
   response: http.ServerResponse<http.IncomingMessage> & {
     req: http.IncomingMessage;
   },
 ) {
-  const { url, headers } = request;
-  const body = await bodyParser(request);
-  try {
-    switch (url) {
-      case "/main-request":
-        response.writeHead(200, {
-          Date: new Date().toISOString(),
-          "Access-Control-Allow-Origin": headers["origin"],
-          "Content-Type": "text/plain",
-          Vary: "Accept-Encoding, Origin",
-          "Content-Encoding": "gzip",
-          "Keep-Alive": "timeout=2, max=100",
-          Connection: "Keep-Alive",
-        });
-        response.end(
-          JSON.stringify({
-            headers: headers,
-            body: body,
-          }),
-        );
-        break;
-      default:
-        response.writeHead(404);
-        response.end();
-    }
-  } catch (error) {
-    console.error(error);
-  }
+    await new postController(
+        response,
+        dependencies.userDomain,
+        new URL(`localhost:${request.url}`),
+        await bodyParser(request),
+    ).processRequest();
 }
 
 async function optionsHandler(
