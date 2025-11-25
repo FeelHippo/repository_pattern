@@ -15,7 +15,7 @@ import postgres from "postgres";
 // the below credentials refer to my own machine
 const sql = postgres(
   "postgres://feelhippo:Filippo333@127.0.0.1:5432/repository_test",
-    { transform: postgres.fromCamel }
+  { transform: postgres.fromCamel },
 );
 
 export default sql;

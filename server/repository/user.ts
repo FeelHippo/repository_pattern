@@ -31,18 +31,18 @@ export default class UserRepository implements UserRepositoryAbstraction {
 
   async readById(id: number): Promise<UserModel | null> {
     const users = await this.db`
-    select ${ this.db('name', 'isDeleted') }
+    select ${this.db("name", "isDeleted")}
     from users
     where id = ${id}
   `;
     if (!users.length) return null;
-      const { name, is_deleted: isDeleted } = users[0];
-      return new UserModel(name, isDeleted, id);
+    const { name, is_deleted: isDeleted } = users[0];
+    return new UserModel(name, isDeleted, id);
   }
 
   async create(user: UserModel): Promise<UserModel> {
     const users = await this.db`
-    insert into users ${ this.db([{ name: user.name, isDeleted: user.isDeleted }]) }
+    insert into users ${this.db([{ name: user.name, isDeleted: user.isDeleted }])}
     returning *
   `;
     const { name, is_deleted: isDeleted, id } = users[0];
