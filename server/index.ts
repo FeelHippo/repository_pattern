@@ -21,6 +21,12 @@ http
       case "POST":
         await controllers.processPostRequest();
         break;
+      case "PUT":
+        await controllers.processPutRequest();
+        break;
+      case "DELETE":
+        await controllers.processDeleteRequest();
+        break;
       case "OPTIONS":
         await controllers.processOptionsRequest();
         break;

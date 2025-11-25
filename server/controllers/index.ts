@@ -98,6 +98,74 @@ export default class Controllers {
     }
   }
 
+  async processPutRequest() {
+    try {
+      switch (this._url.pathname) {
+        case "/user":
+          const searchParams = this._url.searchParams;
+          const id = searchParams.get("id");
+          if (!id) {
+            throw new Error();
+          }
+          const rawBody = await this._bodyParser(this._request);
+          const parsedBody = JSON.parse(rawBody);
+          const { name, isDeleted } = parsedBody;
+          const user = await this._userDomain.modifyUser(
+            parseInt(id),
+            name,
+            isDeleted,
+          );
+          if (!user) {
+            this._response.writeHead(404);
+            this._response.end(JSON.stringify({ user: "User not updated" }));
+            break;
+          }
+          this._response.writeHead(200, {
+            "Content-Type": "application/json",
+          });
+          this._response.end(JSON.stringify({ user }));
+          break;
+        default:
+          this._response.writeHead(404);
+          this._response.end();
+          break;
+      }
+    } catch (error) {
+      console.error(error);
+      this._response.writeHead(500);
+      this._response.end();
+    }
+  }
+
+    async processDeleteRequest() {
+        try {
+            switch (this._url.pathname) {
+                case "/user":
+                    const searchParams = this._url.searchParams;
+                    const id = searchParams.get("id");
+                    if (!id) {
+                        throw new Error();
+                    }
+                    await this._userDomain.removeUser(
+                        parseInt(id),
+                    );
+                    this._response.writeHead(204, {
+                        "Content-Type": "application/json",
+                    });
+                    this._response.end();
+                    break;
+                default:
+                    this._response.writeHead(404);
+                    this._response.end();
+                    break;
+            }
+        } catch (error) {
+            console.error(error);
+            this._response.writeHead(500);
+            this._response.end();
+        }
+    }
+
   async processOptionsRequest() {
     const { url, headers } = this._request;
     try {

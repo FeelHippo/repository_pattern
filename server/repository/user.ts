@@ -24,7 +24,8 @@ export default class UserRepository implements UserRepositoryAbstraction {
   `;
     const usersData: UserModel[] = [];
     for (const user of users) {
-      usersData.push(new UserModel(user.name, user.isDeleted, user.id));
+        const { name, is_deleted: isDeleted, id } = user;
+      usersData.push(new UserModel(name, isDeleted, id));
     }
     return usersData;
   }
@@ -49,11 +50,12 @@ export default class UserRepository implements UserRepositoryAbstraction {
     return new UserModel(name, isDeleted, id);
   }
 
-  async update(id: number, user: UserModel): Promise<UserModel | null> {
+  async update(id: number, user: UserModel): Promise<UserModel> {
     const users = await this.db`
     update users
-    set name = ${user.name}, isDeleted = ${user.isDeleted}
+    set ${this.db(user, "name", "isDeleted")}
     where id = ${id}
+        returning *
   `;
     return new UserModel(users[0].name, users[0].isDeleted, id);
   }

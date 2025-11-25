@@ -17,30 +17,36 @@ The *Repository Layer* centralizes the query construction code, providing a more
 
 ## Requests
 
+GET ALL
 ```
-curl --location --request OPTIONS 'localhost:8080/preflight-request' \
---header 'Host: localhost:3000' \
---header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
---header 'Accept-Language: en-us,en;q=0.5' \
---header 'Accept-Encoding: gzip,deflate' \
---header 'Origin: localhost:3000' \
---header 'Access-Control-Request-Method: POST' \
---header 'Access-Control-Request-Headers: content-type,x-pingother' \
---header 'Warning: A non-standard HTTP X-PINGOTHER request header is set. Such headers are not part of HTTP/1.1, but are generally useful to web applications. Since the request uses a Content-Type of text/xml, and since a custom header is set, this request is preflighted'
+curl --location 'localhost:8080/all-users'
 ```
 
-...
-
+GET BY ID
 ```
-curl --location 'localhost:8080/main-request' \
---header 'Content-Type: multipart/form-data' \
---header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
---header 'Accept-Encoding: gzip,deflate' \
---header 'X-PINGOTHER: pingpong' \
---header 'Content-Type: text/xml; charset=UTF-8' \
---header 'Referer: https://foo.example/examples/preflightInvocation.html' \
---header 'Pragma: no-cache' \
---header 'Cache-Control: no-cache' \
---header 'Origin: localhost:3000' \
---data '"<person><name>Arun</name></person>"'
+curl --location 'localhost:8080/user?id=1'
+```
+
+POST
+```
+curl --location 'localhost:8080/user' \
+--header 'Content-Type: application/json' \
+--data '{
+    "name": "Elio"
+}'
+```
+
+PUT
+```
+curl --location --request PUT 'localhost:8080/user?id=2' \
+--header 'Content-Type: application/json' \
+--data '{
+    "name": "Filippo",
+    "isDeleted": false
+}'
+```
+
+DELETE
+```
+curl --location --request DELETE 'localhost:8080/user?id=2'
 ```

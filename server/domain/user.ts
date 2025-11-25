@@ -31,7 +31,15 @@ export default class UserDomain {
     return this.userRepository.create(new UserModel(name, isDeleted));
   }
 
-  async modifyUser(id: number, name: string, isDeleted: boolean) {
-    await this.userRepository.update(id, new UserModel(name, isDeleted));
+  async modifyUser(
+    id: number,
+    name: string,
+    isDeleted: boolean,
+  ): Promise<UserModel> {
+    return this.userRepository.update(id, new UserModel(name, isDeleted));
   }
+
+    async removeUser(id: number): Promise<void> {
+        return this.userRepository.delete(id);
+    }
 }
