@@ -22,12 +22,14 @@ export default class Controllers {
   set response(response: http.ServerResponse) {
     this._response = response;
   }
-  _userDomain: UserDomain;
+  private readonly _userDomain: UserDomain;
   _url: URL;
   set url(url: URL) {
     this._url = url;
   }
-  _bodyParser: (request: http.IncomingMessage) => Promise<string>;
+  private readonly _bodyParser: (
+    request: http.IncomingMessage,
+  ) => Promise<string>;
 
   async processGetRequest() {
     try {
@@ -137,34 +139,32 @@ export default class Controllers {
     }
   }
 
-    async processDeleteRequest() {
-        try {
-            switch (this._url.pathname) {
-                case "/user":
-                    const searchParams = this._url.searchParams;
-                    const id = searchParams.get("id");
-                    if (!id) {
-                        throw new Error();
-                    }
-                    await this._userDomain.removeUser(
-                        parseInt(id),
-                    );
-                    this._response.writeHead(204, {
-                        "Content-Type": "application/json",
-                    });
-                    this._response.end();
-                    break;
-                default:
-                    this._response.writeHead(404);
-                    this._response.end();
-                    break;
-            }
-        } catch (error) {
-            console.error(error);
-            this._response.writeHead(500);
-            this._response.end();
-        }
+  async processDeleteRequest() {
+    try {
+      switch (this._url.pathname) {
+        case "/user":
+          const searchParams = this._url.searchParams;
+          const id = searchParams.get("id");
+          if (!id) {
+            throw new Error();
+          }
+          await this._userDomain.removeUser(parseInt(id));
+          this._response.writeHead(204, {
+            "Content-Type": "application/json",
+          });
+          this._response.end();
+          break;
+        default:
+          this._response.writeHead(404);
+          this._response.end();
+          break;
+      }
+    } catch (error) {
+      console.error(error);
+      this._response.writeHead(500);
+      this._response.end();
     }
+  }
 
   async processOptionsRequest() {
     const { url, headers } = this._request;

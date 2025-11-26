@@ -11,28 +11,28 @@ export interface UserRepositoryAbstraction {
 
 export default class UserRepository implements UserRepositoryAbstraction {
   constructor(sql: postgres.Sql) {
-    this.db = sql;
+    this._db = sql;
   }
 
-  private readonly db: postgres.Sql;
+  private readonly _db: postgres.Sql;
 
   async readAll(): Promise<UserModel[]> {
-    const users = await this.db`
+    const users = await this._db`
     select
       *
     from users
   `;
     const usersData: UserModel[] = [];
     for (const user of users) {
-        const { name, is_deleted: isDeleted, id } = user;
+      const { name, is_deleted: isDeleted, id } = user;
       usersData.push(new UserModel(name, isDeleted, id));
     }
     return usersData;
   }
 
   async readById(id: number): Promise<UserModel | null> {
-    const users = await this.db`
-    select ${this.db("name", "isDeleted")}
+    const users = await this._db`
+    select ${this._db("name", "isDeleted")}
     from users
     where id = ${id}
   `;
@@ -42,8 +42,8 @@ export default class UserRepository implements UserRepositoryAbstraction {
   }
 
   async create(user: UserModel): Promise<UserModel> {
-    const users = await this.db`
-    insert into users ${this.db([{ name: user.name, isDeleted: user.isDeleted }])}
+    const users = await this._db`
+    insert into users ${this._db([{ name: user.name, isDeleted: user.isDeleted }])}
     returning *
   `;
     const { name, is_deleted: isDeleted, id } = users[0];
@@ -51,9 +51,9 @@ export default class UserRepository implements UserRepositoryAbstraction {
   }
 
   async update(id: number, user: UserModel): Promise<UserModel> {
-    const users = await this.db`
+    const users = await this._db`
     update users
-    set ${this.db(user, "name", "isDeleted")}
+    set ${this._db(user, "name", "isDeleted")}
     where id = ${id}
         returning *
   `;
@@ -61,7 +61,7 @@ export default class UserRepository implements UserRepositoryAbstraction {
   }
 
   async delete(id: number): Promise<void> {
-    await this.db`
+    await this._db`
     delete from users
     where id = ${id}
   `;
