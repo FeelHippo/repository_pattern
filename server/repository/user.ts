@@ -1,5 +1,6 @@
 import postgres from "postgres";
-import { UserModel } from "@/domain/user";
+import UserMapper from "@/data/mapper/user";
+import {UserModel} from "@/data/entity/user";
 
 export interface UserRepositoryAbstraction {
   readAll(): Promise<UserModel[]>;
@@ -10,60 +11,29 @@ export interface UserRepositoryAbstraction {
 }
 
 export default class UserRepository implements UserRepositoryAbstraction {
-  constructor(sql: postgres.Sql) {
-    this._db = sql;
+  constructor(userMapper: UserMapper) {
+    this._userMapper = userMapper;
   }
 
-  private readonly _db: postgres.Sql;
+  private readonly _userMapper: UserMapper;
 
   async readAll(): Promise<UserModel[]> {
-    const users = await this._db`
-    select
-      *
-    from users
-  `;
-    const usersData: UserModel[] = [];
-    for (const user of users) {
-      const { name, is_deleted: isDeleted, id } = user;
-      usersData.push(new UserModel(name, isDeleted, id));
-    }
-    return usersData;
+    return this._userMapper.readAll();
   }
 
   async readById(id: number): Promise<UserModel | null> {
-    const users = await this._db`
-    select ${this._db("name", "isDeleted")}
-    from users
-    where id = ${id}
-  `;
-    if (!users.length) return null;
-    const { name, is_deleted: isDeleted } = users[0];
-    return new UserModel(name, isDeleted, id);
+    return this._userMapper.readById(id);
   }
 
   async create(user: UserModel): Promise<UserModel> {
-    const users = await this._db`
-    insert into users ${this._db([{ name: user.name, isDeleted: user.isDeleted }])}
-    returning *
-  `;
-    const { name, is_deleted: isDeleted, id } = users[0];
-    return new UserModel(name, isDeleted, id);
+    return this._userMapper.create(user);
   }
 
   async update(id: number, user: UserModel): Promise<UserModel> {
-    const users = await this._db`
-    update users
-    set ${this._db(user, "name", "isDeleted")}
-    where id = ${id}
-        returning *
-  `;
-    return new UserModel(users[0].name, users[0].isDeleted, id);
+    return this._userMapper.update(id, user);
   }
 
   async delete(id: number): Promise<void> {
-    await this._db`
-    delete from users
-    where id = ${id}
-  `;
+    return this._userMapper.delete(id);
   }
 }

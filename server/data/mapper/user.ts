@@ -1,0 +1,69 @@
+import postgres from "postgres";
+import { UserModel } from "@/data/entity/user";
+
+export interface UserMapperAbstraction {
+  readAll(): Promise<UserModel[]>;
+  readById(id: number): Promise<UserModel | null>;
+  create(user: UserModel): Promise<UserModel>;
+  update(id: number, user: UserModel): Promise<UserModel | null>;
+  delete(id: number): Promise<void>;
+}
+
+export default class UserMapper implements UserMapperAbstraction {
+  constructor(sql: postgres.Sql) {
+    this._db = sql;
+  }
+
+  private readonly _db: postgres.Sql;
+
+  async readAll(): Promise<UserModel[]> {
+    const users = await this._db`
+    select
+      *
+    from users
+  `;
+    const usersData: UserModel[] = [];
+    for (const user of users) {
+      const { name, is_deleted: isDeleted, id } = user;
+      usersData.push(new UserModel(name, isDeleted, id));
+    }
+    return usersData;
+  }
+
+  async readById(id: number): Promise<UserModel | null> {
+    const users = await this._db`
+    select ${this._db("name", "isDeleted")}
+    from users
+    where id = ${id}
+  `;
+    if (!users.length) return null;
+    const { name, is_deleted: isDeleted } = users[0];
+    return new UserModel(name, isDeleted, id);
+  }
+
+  async create(user: UserModel): Promise<UserModel> {
+    const users = await this._db`
+    insert into users ${this._db([{ name: user.name, isDeleted: user.isDeleted }])}
+    returning *
+  `;
+    const { name, is_deleted: isDeleted, id } = users[0];
+    return new UserModel(name, isDeleted, id);
+  }
+
+  async update(id: number, user: UserModel): Promise<UserModel> {
+    const users = await this._db`
+    update users
+    set ${this._db(user, "name", "isDeleted")}
+    where id = ${id}
+        returning *
+  `;
+    return new UserModel(users[0].name, users[0].isDeleted, id);
+  }
+
+  async delete(id: number): Promise<void> {
+    await this._db`
+    delete from users
+    where id = ${id}
+  `;
+  }
+}
